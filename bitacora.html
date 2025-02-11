@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora de Actividades</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Bitácora de Actividades</h1>
+    <button id="nuevaActividad">Nueva Actividad</button>
+    <form id="myForm">
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Inicio</th>
+                        <th>Fin</th>
+                        <th>Interrupción</th>
+                        <th>Tiempo</th>
+                        <th>Actividad</th>
+                        <th>Comentarios</th>
+                        <th>Reloj</th>
+                        <th>Hora Actual</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaActividades"></tbody>
+            </table>
+        </div>
+    </form>
+    
+    <!-- Botón para finalizar la bitácora -->
+    <button id="finalizarBitacora">Finalizar Bitácora</button>
+    
+    <!-- Lienzo para el gráfico -->
+    <canvas id="miGrafico" width="400" height="200"></canvas>
+
+    <!-- Modal para solicitar el nombre de la actividad -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <label for="nombreActividad">Nombre de la Actividad:</label>
+            <input type="text" id="nombreActividad" name="nombreActividad">
+            <button id="guardarActividad">Guardar</button>
+        </div>
+    </div>
+
+    <!-- Incluir la librería Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Incluir el archivo de JavaScript -->
+    <script src="renderer.js"></script>
+</body>
+</html>
