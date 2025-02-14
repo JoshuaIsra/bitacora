@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const crearNuevoBtn = document.getElementById("crearNuevo");
+
+    crearNuevoBtn.addEventListener("click", function() {
+        window.location.href = "bitacora.html";
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
     const tablaActividades = document.getElementById("tablaActividades");
     const finalizarBitacoraBtn = document.getElementById("finalizarBitacora");
     const tablaTiempos = document.getElementById("tablaTiempos").querySelector("tbody");
