@@ -1,41 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const nuevaActividadBtn = document.getElementById("nuevaActividad");
     const tablaActividades = document.getElementById("tablaActividades");
-    const modal = document.getElementById("modal");
-    const span = document.getElementsByClassName("close")[0];
-    const guardarActividadBtn = document.getElementById("guardarActividad");
-    let nombreActividadInput = document.getElementById("nombreActividad");
     const finalizarBitacoraBtn = document.getElementById("finalizarBitacora");
+    const tablaTiempos = document.getElementById("tablaTiempos").querySelector("tbody");
 
     // Solicitar permiso de notificación
     if (Notification.permission !== "granted") {
         Notification.requestPermission();
     }
 
-    // Mostrar modal
-    nuevaActividadBtn.addEventListener("click", mostrarModal);
+    // Actividades predefinidas
+    const actividadesPredefinidas = [
+        "Planificacion", "Analisis", "Codificacion", "Pruebas", "Lanzamiento",
+        "Revision", "Revision de Codigo", "Diagramar", "Reunion"
+    ];
 
-    function mostrarModal() {
-        modal.style.display = "block";
-    }
-
-    // Cerrar modal
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-
-    // Guardar actividad y agregar fila
-    guardarActividadBtn.addEventListener("click", function() {
-        agregarFila(nombreActividadInput.value);
-        modal.style.display = "none";
-        nombreActividadInput.value = "";
-    });
+    // Agregar filas para actividades predefinidas
+    actividadesPredefinidas.forEach(actividad => agregarFila(actividad));
 
     function agregarFila(nombreActividad) {
         if (nombreActividad) {
@@ -46,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td><input type="date" value="${fechaActual}" readonly></td>
                 <td><input type="time" class="inicio"></td>
                 <td><input type="time" class="fin"></td>
-                <td><input type="number" min="0" class="interrupcion"></td>
+                <td><input type="number" min="0" class="interrupcion" readonly></td>
                 <td><input type="text" class="tiempo" readonly></td>
                 <td><input type="text" value="${nombreActividad}" readonly></td>
                 <td><input type="text"></td>
@@ -86,14 +66,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             });
 
-            // let tiempoPausaInicio = null;
-            // let totalTiempoPausa= 0;
+            let tiempoPausaInicio = null;
+            let totalTiempoPausa = 0;
+
             pausarTiempoBtn.addEventListener("click", function() {
                 if (pausarTiempoBtn.textContent === "Pausar Tiempo") {
                     clearInterval(intervalId);
                     pausarTiempoBtn.textContent = "Reanudar Tiempo";
+                    tiempoPausaInicio = new Date();
                 } else {
                     pausarTiempoBtn.textContent = "Pausar Tiempo";
+                    if (tiempoPausaInicio) {
+                        let tiempoPausaFin = new Date();
+                        let diferenciaMinutos = Math.floor((tiempoPausaFin - tiempoPausaInicio) / (1000 * 60));
+                        totalTiempoPausa += diferenciaMinutos;
+                        inputInterrupcion.value = totalTiempoPausa || 0; // Asegúrate de que el valor sea válido
+                        tiempoPausaInicio = null;
+                    }
                     startClock(reloj, horaActualSpan);
                 }
             });
@@ -105,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 iniciarTiempoBtn.disabled = false;
                 pausarTiempoBtn.disabled = true;
                 pararTiempoBtn.disabled = true;
-                
+
                 const [inicioHoras, inicioMinutos, inicioSegundos] = inputInicio.value.split(':').map(Number);
                 const [finHoras, finMinutos, finSegundos] = inputFin.value.split(':').map(Number);
                 const inicio = new Date();
@@ -115,11 +104,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 let tiempoTotal = (fin - inicio) / (1000 * 60); // Diferencia en minutos
 
-                // Restar interrupciones si existen
                 const interrupcion = parseInt(inputInterrupcion.value) || 0;
                 tiempoTotal -= interrupcion;
 
-                // Asegurar que el tiempo no sea negativo
                 inputTiempo.value = tiempoTotal > 0 ? `${tiempoTotal} min` : "0 min";
             });
 
@@ -132,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             function startClock(reloj, horaActualSpan) {
                 startTime = new Date() - elapsedTime;
-                
+
                 intervalId = setInterval(function() {
                     let currentTime = new Date();
                     elapsedTime = currentTime - startTime;
@@ -146,6 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     if (minutes >= 1 && seconds === 0) {
                         mostrarNotificacion();
+                        reproducirAlarma();
                     }
                 }, 1000);
             }
@@ -156,14 +144,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             function mostrarNotificacion() {
                 if (Notification.permission === "granted") {
-                    new Notification("¡Aviso!", { body: "El tiempo en el reloj ha alcanzado los 60 minutos." });
+                    new Notification("¡Aviso!", { body: "Pare de hacer esta actividad" });
                 } else if (Notification.permission !== "denied") {
                     Notification.requestPermission().then(permission => {
                         if (permission === "granted") {
-                            new Notification("¡Aviso!", { body: "El tiempo en el reloj ha alcanzado los 60 minutos." });
+                            new Notification("¡Aviso!", { body: "Pare de hacer esta actividad" });
                         }
                     });
                 }
+            }
+
+            function reproducirAlarma() {
+                const audio = new Audio('alarma.mp3');
+                audio.play();
+                mostrarNotificacion();
             }
 
             inputInicio.addEventListener("change", calcularTiempo);
@@ -171,6 +165,11 @@ document.addEventListener("DOMContentLoaded", function () {
             inputInterrupcion.addEventListener("input", calcularTiempo);
 
             function calcularTiempo() {
+                // Asegúrate de que el valor de interrupciones sea válido
+                if (!inputInterrupcion.value || isNaN(inputInterrupcion.value)) {
+                    inputInterrupcion.value = 0;
+                }
+
                 if (inputInicio.value && inputFin.value) {
                     const [inicioHoras, inicioMinutos, inicioSegundos] = inputInicio.value.split(':').map(Number);
                     const [finHoras, finMinutos, finSegundos] = inputFin.value.split(':').map(Number);
@@ -194,17 +193,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     finalizarBitacoraBtn.addEventListener("click", function() {
         const filas = document.querySelectorAll("#tablaActividades tr");
+
+        // Finalizar todas las actividades en curso
+        filas.forEach((fila) => {
+            const pararTiempoBtn = fila.querySelector(".pararTiempo");
+            if (!pararTiempoBtn.disabled) {
+                pararTiempoBtn.click();
+            }
+        });
+
         const actividades = [];
 
         filas.forEach((fila) => {
             const actividad = fila.cells[5].querySelector("input").value;
             const tiempo = parseFloat(fila.cells[4].querySelector("input").value);
+            const interrupcion = parseFloat(fila.cells[3].querySelector("input").value) || 0;
             if (actividad && tiempo) {
-                actividades.push({ actividad, tiempo });
+                actividades.push({ actividad, tiempo, interrupcion });
             }
         });
 
         generarGrafico(actividades);
+        mostrarTiempos(actividades);
+        generarPDF(actividades);
     });
 
     function generarGrafico(actividades) {
@@ -231,6 +242,73 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
             }
+        });
+    }
+
+    function mostrarTiempos(actividades) {
+        tablaTiempos.innerHTML = ''; // Limpiar la tabla antes de agregar nuevas filas
+
+        actividades.forEach(({ actividad, tiempo, interrupcion }) => {
+            const tiempoEfectivo = tiempo;
+            const tiempoMuerto = interrupcion;
+
+            const nuevaFila = document.createElement("tr");
+            nuevaFila.innerHTML = `
+                <td>${actividad}</td>
+                <td>${tiempoEfectivo}</td>
+                <td>${tiempoMuerto}</td>
+            `;
+
+            tablaTiempos.appendChild(nuevaFila);
+        });
+    }
+
+    function generarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+    
+        // Capturar la tabla de actividades
+        html2canvas(document.querySelector("#tablaActividades")).then(canvas => {
+            const imgData = canvas.toDataURL("image/png");
+            const imgWidth = 190; // Ancho de la imagen en el PDF
+            const pageHeight = 295; // Altura de la página en el PDF
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 10;
+    
+            doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+    
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+    
+            // Capturar el gráfico
+            html2canvas(document.querySelector("#miGrafico")).then(canvas => {
+                const imgData = canvas.toDataURL("image/png");
+                const imgWidth = 190; // Ancho de la imagen en el PDF
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let position = heightLeft > 0 ? heightLeft + 10 : 10;
+    
+                doc.addPage();
+                doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    
+                // Capturar la tabla de tiempos
+                html2canvas(document.querySelector("#tablaTiempos")).then(canvas => {
+                    const imgData = canvas.toDataURL("image/png");
+                    const imgWidth = 190; // Ancho de la imagen en el PDF
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let position = heightLeft > 0 ? heightLeft + 10 : 10;
+    
+                    doc.addPage();
+                    doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    
+                    doc.save("reporte_actividades.pdf");
+                });
+            });
         });
     }
 });

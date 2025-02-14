@@ -8,7 +8,6 @@
 </head>
 <body>
     <h1>Bitácora de Actividades</h1>
-    <button id="nuevaActividad">Nueva Actividad</button>
     <form id="myForm">
         <div>
             <table>
@@ -47,9 +46,29 @@
         </div>
     </div>
 
+    <table id="tablaTiempos">
+        <thead>
+            <tr>
+                <th>Actividad</th>
+                <th>Tiempo Efectivo (min)</th>
+                <th>Tiempo Muerto (min)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Filas generadas dinámicamente -->
+        </tbody>
+    </table>
+
     <!-- Incluir la librería Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Incluir el archivo de JavaScript -->
     <script src="renderer.js"></script>
+    <!-- Incluir la librería Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Incluir el archivo de JavaScript -->
+<script src="renderer.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </body>
 </html>
