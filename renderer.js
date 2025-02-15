@@ -320,3 +320,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+document.getElementById('abrirExistente').addEventListener('click', function() {
+    alert('Sin implementar');
+});
